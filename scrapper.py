@@ -17,6 +17,11 @@ TRAINER_EMAILS = {"tag": "input", "id": "hf_email"}
 names = []
 emails = []
 phoneNumbers = []
+websites = []
+facebookProfiles = []
+twitterProfiles = []
+youtubeChannels = []
+linkedinProfiles = []
 trainerPages = []
 
 # getting provinces
@@ -126,6 +131,49 @@ provinces = [
     "viterbo"
 ]
 
+
+def getTrainerInfo(data, infoType):
+  info = ""
+
+  if infoType == "email":
+    try:
+      info = data.find(TRAINER_EMAILS["tag"], {"id": TRAINER_EMAILS["id"]}).attrs['value']
+    except:
+      info = "nd"
+  elif infoType == "phone":
+    try:
+      info = data.select(".tabella_pagina_studente td")[1].getText()
+    except:
+      info = "nd"
+  elif infoType == "website":
+    try:
+      info = data.select(".tabella_pagina_studente tr td a")[1].attrs["href"]
+    except:
+      info = "nd"
+  elif infoType == "facebook":
+    try:
+      info = data.select(".tabella_pagina_studente tr td a")[2].attrs["href"]
+    except:
+      info = "nd"
+  elif infoType == "twitter":
+    try:
+      info = data.select(".tabella_pagina_studente tr td a")[3].attrs["href"]
+    except:
+      info = "nd"
+  elif infoType == "youtube":
+    try:
+      info = data.select(".tabella_pagina_studente tr td a")[4].attrs["href"]
+    except:
+      info = "nd"
+  elif infoType == "linkedin":
+    try:
+      info = data.select(".tabella_pagina_studente tr td a")[5].attrs["href"]
+    except:
+      info = "nd"
+
+  return info
+
+
 for province in provinces:
   page = requests.get(MAIN_URL + "/provincia/" + province)
   data = BeautifulSoup(page.content, "html.parser")
@@ -141,21 +189,15 @@ for province in provinces:
 
       page = requests.get(MAIN_URL + url)
       data = BeautifulSoup(page.content, "html.parser")
-      email = ""
-      phone = ""
 
-      try:
-          email = data.find(TRAINER_EMAILS["tag"], {"id": TRAINER_EMAILS["id"]}).attrs['value']
-      except:
-          email = "none"
-
-      try:
-          phone = data.select(".tabella_pagina_studente td")[1].getText()
-      except:
-          phone = "nd"
-
-      phoneNumbers.append(phone)
-      emails.append(email)
+      emails.append(getTrainerInfo(data, "email"))
+      phoneNumbers.append(getTrainerInfo(data, "phone"))
+      websites.append(getTrainerInfo(data, "website"))
+      facebookProfiles.append(getTrainerInfo(data, "facebook"))
+      twitterProfiles.append(getTrainerInfo(data, "twitter"))
+      youtubeChannels.append(getTrainerInfo(data, "youtube"))
+      linkedinProfiles.append(getTrainerInfo(data, "linkedin"))
+      
 
   try:
     os.remove('trainers_' + province + '.csv')
@@ -166,7 +208,16 @@ for province in provinces:
   writer = csv.writer(file)
 
   for i in range(0, len(trainerPages) - 1):
-    data = [names[i], emails[i], phoneNumbers[i]]
+    data = [
+      names[i], 
+      emails[i], 
+      phoneNumbers[i],
+      websites[i],
+      facebookProfiles[i],
+      twitterProfiles[i],
+      youtubeChannels[i],
+      linkedinProfiles[i]
+    ]
     writer.writerow(data)
 
   file.close()
