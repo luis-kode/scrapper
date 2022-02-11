@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 
 # page routes
-MAIN_URL = "https://www.bancalavorofitness.com/"
+MAIN_URL = "https://www.bancalavorofitness.com"
 PROVINCES_URL = "provincia/"
 
 # html classes
@@ -11,34 +11,140 @@ TRAINER_NAMES = {"tag": "td", "className": "td_nome_cognome"}
 TRAINER_PHONE_NUMBERS = {"tag": "td"}
 TRAINER_EMAILS = {"tag": "input", "id": "hf_email"}
 
-page = requests.get(MAIN_URL)
-data = BeautifulSoup(page.content, "html.parser")
-
 # trainer's data
-provinces = []
 names = []
 emails = []
 phoneNumbers = []
 trainersCount = 0
+trainerPages = []
 
+# getting provinces
+provinces = [
+    "agriento",
+    "alessandria",
+    "ancona",
+    "aosta",
+    "arezzo",
+    "ascoli-piceno"
+    "avellino",
+    "bari",
+    "barletta-andria-trani",
+    "belluno",
+    "benevento",
+    "bergamo",
+    "biella",
+    "bologna",
+    "brescia",
+    "brindisi",
+    "cagliari",
+    "caltanissetta",
+    "campobasso"
+    "caserta",
+    "catania",
+    "catanzaro",
+    "chieti",
+    "como",
+    "cosenza",
+    "cremona",
+    "crotone",
+    "cuneo",
+    "enna",
+    "fermo",
+    "ferrara",
+    "firenze",
+    "foggia",
+    "forli-cesena",
+    "frosinone",
+    "genova",
+    "gorizia",
+    "grosseto",
+    "imperia"
+    "isernia",
+    "l-aquila",
+    "la-spezia",
+    "latina",
+    "lecce",
+    "lecco",
+    "livorno",
+    "lodi",
+    "lucca",
+    "macerata",
+    "mantova",
+    "massa-carrara",
+    "matera",
+    "messina",
+    "milano",
+    "modena",
+    "monza-brianza",
+    "napoli",
+    "novara",
+    "nuoro",
+    "oristano",
+    "padova",
+    "palermo",
+    "parma",
+    "pavia",
+    "perugia",
+    "pesaro-urbino",
+    "pescara",
+    "piacenza",
+    "pisa",
+    "pistoia",
+    "pordenone",
+    "potenza",
+    "prato",
+    "ragusa",
+    "ravenna",
+    "reggio-emilia",
+    "rieti",
+    "rimini",
+    "roma",
+    "rovigo",
+    "salerno",
+    "sassari",
+    "savona",
+    "siena",
+    "sondrio",
+    "sud-sardegna",
+    "taranto",
+    "teramo",
+    "terni",
+    "torino",
+    "trapani",
+    "trento",
+    "treviso",
+    "trieste",
+    "udine",
+    "varese",
+    "venezia",
+    "verbano-cusio-ossola",
+    "vercelli",
+    "verona",
+    "vibo-valentia",
+    "vinceza",
+    "viterbo"
+]
 
-def getUrlFormated(trainerName):
-    trainerName.lower()
-    return trainerName.replace(" ", "-")
+page = requests.get(MAIN_URL + "/provincia/" + provinces[0])
+data = BeautifulSoup(page.content, "html.parser")
+print(MAIN_URL + "/provincia/" + provinces[0])
 
-
-# getting names by provinces
-print(data.find_all(TRAINER_NAMES["tag"], _class=TRAINER_NAMES["className"]))
+# getting names
+for name in data.find_all(TRAINER_NAMES["tag"], TRAINER_NAMES["className"]):
+    trainerPages.append(name.find(href=True).attrs["href"])
+    names.append(name.getText())
 
 # getting trainer email and phones
-for name in names:
-    page = requests.get(MAIN_URL + getUrlFormated(name))
-    print(MAIN_URL + getUrlFormated(name))
+for url in trainerPages:
+
+    page = requests.get(MAIN_URL + url)
     data = BeautifulSoup(page.content, "html.parser")
     email = ""
     phone = ""
+
     try:
-        email = data.find(TRAINER_EMAILS["tag"], {"id": TRAINER_EMAILS["id"]}).attrs['value']
+        email = data.find(TRAINER_EMAILS["tag"], {
+                          "id": TRAINER_EMAILS["id"]}).attrs['value']
     except:
         email = "none"
 
@@ -50,5 +156,5 @@ for name in names:
     phoneNumbers.append(phone)
     emails.append(email)
 
-for user in phoneNumbers:
-    print(user)
+    for i in range(len(trainerPages) - 1):
+        print(names[i] + " - " + emails[i] + " - " + phoneNumbers[i])
