@@ -1,6 +1,5 @@
 import os
 import requests
-import csv
 from bs4 import BeautifulSoup
 
 # page routes
@@ -133,46 +132,47 @@ provinces = [
 
 
 def getTrainerInfo(data, infoType):
-  info = ""
-
   if infoType == "email":
     try:
-      info = data.find(TRAINER_EMAILS["tag"], {"id": TRAINER_EMAILS["id"]}).attrs['value']
+      info = data.find(TRAINER_EMAILS["tag"], {"id": TRAINER_EMAILS["id"]})
+      return info.attrs["value"]
     except:
-      info = "nd"
+      return "email"
   elif infoType == "phone":
-    try:
-      info = data.select(".tabella_pagina_studente td")[1].getText()
-    except:
-      info = "nd"
+    if len(data.select(".tabella_pagina_studente td")) > 1:
+      return data.select(".tabella_pagina_studente td")[1].getText()
+    else:
+      return "phone"
   elif infoType == "website":
-    try:
-      info = data.select(".tabella_pagina_studente tr td a")[1].attrs["href"]
-    except:
-      info = "nd"
+    info = data.select(".tabella_pagina_studente tr td")[5]
+    if not info.getText() == "nd":
+      return info.find("a").attrs["href"]
+    else:
+      return info.getText()
   elif infoType == "facebook":
-    try:
-      info = data.select(".tabella_pagina_studente tr td a")[2].attrs["href"]
-    except:
-      info = "nd"
+    info = data.select(".tabella_pagina_studente tr td")[7]
+    if info.getText() != "nd" and info.getText() != "n.d.":
+      return info.find("a").attrs["href"]
+    else:
+      return "nd"
   elif infoType == "twitter":
-    try:
-      info = data.select(".tabella_pagina_studente tr td a")[3].attrs["href"]
-    except:
-      info = "nd"
+    info = data.select(".tabella_pagina_studente tr td")[9]
+    if info.getText() != "nd" and info.getText() != "n.d.":
+      return info.find("a").attrs["href"]
+    else:
+      return "nd"
   elif infoType == "youtube":
-    try:
-      info = data.select(".tabella_pagina_studente tr td a")[4].attrs["href"]
-    except:
-      info = "nd"
+    info = data.select(".tabella_pagina_studente tr td")[11]
+    if info.getText() != "nd" and info.getText() != "n.d.":
+      return info.find("a").attrs["href"]
+    else:
+      return "nd"
   elif infoType == "linkedin":
-    try:
-      info = data.select(".tabella_pagina_studente tr td a")[5].attrs["href"]
-    except:
-      info = "nd"
-
-  return info
-
+    info = data.select(".tabella_pagina_studente tr td")[13]
+    if info.getText() != "nd" and info.getText() != "n.d.":
+      return info.find("a").attrs["href"]
+    else:
+      return "nd"
 
 for province in provinces:
   page = requests.get(MAIN_URL + "/provincia/" + province)
@@ -197,27 +197,25 @@ for province in provinces:
       twitterProfiles.append(getTrainerInfo(data, "twitter"))
       youtubeChannels.append(getTrainerInfo(data, "youtube"))
       linkedinProfiles.append(getTrainerInfo(data, "linkedin"))
-      
 
   try:
-    os.remove('trainers_' + province + '.csv')
+    os.remove('trainers_' + province + '.txt')
   except:
     print("file not exists")
   
-  file = open('trainers_' + province + '.csv', 'w')
-  writer = csv.writer(file)
+  file = open('trainers_' + province + '.txt', 'w')
 
   for i in range(0, len(trainerPages) - 1):
-    data = [
-      names[i], 
-      emails[i], 
-      phoneNumbers[i],
-      websites[i],
-      facebookProfiles[i],
-      twitterProfiles[i],
-      youtubeChannels[i],
-      linkedinProfiles[i]
-    ]
-    writer.writerow(data)
+    print(names[i])
+    print(emails[i])
+    print(phoneNumbers[i])
+    print(websites[i])
+    print(facebookProfiles[i])
+    print(twitterProfiles[i])
+    print(youtubeChannels[i])
+    print(linkedinProfiles[i])
+    print("-----------------")
+    line = names[i] + ";" + emails[i] + ";" + phoneNumbers[i] + ";" + websites[i] + ";" + facebookProfiles[i] + ";" + twitterProfiles[i] + ";" + youtubeChannels[i] + ";" + linkedinProfiles[i] + ";"
+    file.write(line)
 
   file.close()
