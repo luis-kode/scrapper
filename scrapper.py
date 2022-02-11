@@ -1,4 +1,6 @@
+import os
 import requests
+import csv
 from bs4 import BeautifulSoup
 
 # page routes
@@ -15,12 +17,11 @@ TRAINER_EMAILS = {"tag": "input", "id": "hf_email"}
 names = []
 emails = []
 phoneNumbers = []
-trainersCount = 0
 trainerPages = []
 
 # getting provinces
 provinces = [
-    "agriento",
+    "agrigento",
     "alessandria",
     "ancona",
     "aosta",
@@ -125,36 +126,47 @@ provinces = [
     "viterbo"
 ]
 
-page = requests.get(MAIN_URL + "/provincia/" + provinces[0])
-data = BeautifulSoup(page.content, "html.parser")
-print(MAIN_URL + "/provincia/" + provinces[0])
+for province in provinces:
+  page = requests.get(MAIN_URL + "/provincia/" + province)
+  data = BeautifulSoup(page.content, "html.parser")
+  print(MAIN_URL + "/provincia/" + province)
 
-# getting names
-for name in data.find_all(TRAINER_NAMES["tag"], TRAINER_NAMES["className"]):
-    trainerPages.append(name.find(href=True).attrs["href"])
-    names.append(name.getText())
+  # getting names
+  for name in data.find_all(TRAINER_NAMES["tag"], TRAINER_NAMES["className"]):
+      trainerPages.append(name.find(href=True).attrs["href"])
+      names.append(name.getText())
 
-# getting trainer email and phones
-for url in trainerPages:
+  # getting trainer email and phones
+  for url in trainerPages:
 
-    page = requests.get(MAIN_URL + url)
-    data = BeautifulSoup(page.content, "html.parser")
-    email = ""
-    phone = ""
+      page = requests.get(MAIN_URL + url)
+      data = BeautifulSoup(page.content, "html.parser")
+      email = ""
+      phone = ""
 
-    try:
-        email = data.find(TRAINER_EMAILS["tag"], {
-                          "id": TRAINER_EMAILS["id"]}).attrs['value']
-    except:
-        email = "none"
+      try:
+          email = data.find(TRAINER_EMAILS["tag"], {"id": TRAINER_EMAILS["id"]}).attrs['value']
+      except:
+          email = "none"
 
-    try:
-        phone = data.select(".tabella_pagina_studente td")[1].getText()
-    except:
-        phone = "nd"
+      try:
+          phone = data.select(".tabella_pagina_studente td")[1].getText()
+      except:
+          phone = "nd"
 
-    phoneNumbers.append(phone)
-    emails.append(email)
+      phoneNumbers.append(phone)
+      emails.append(email)
 
-    for i in range(len(trainerPages) - 1):
-        print(names[i] + " - " + emails[i] + " - " + phoneNumbers[i])
+  try:
+    os.remove('trainers_' + province + '.csv')
+  except:
+    print("file not exists")
+  
+  file = open('trainers_' + province + '.csv', 'w')
+  writer = csv.writer(file)
+
+  for i in range(0, len(trainerPages) - 1):
+    data = [names[i], emails[i], phoneNumbers[i]]
+    writer.writerow(data)
+
+  file.close()
